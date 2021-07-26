@@ -41,6 +41,7 @@ app.post("/auth/google", async (req: express.Request, res: express.Response, nex
 
 async function bootstrap() {
   try {
+    console.log(process.env.DB_CONNECTION_STRING);
     await connect(process.env.DB_CONNECTION_STRING, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
