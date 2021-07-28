@@ -8,7 +8,7 @@ interface User {
 
 const schema = new Schema<User>({
   provider: { type: String, required: true },
-  name: { type: String, required: true },
+  id: { type: String, required: true },
   email: { type: String, required: true },
   controllerId: { type: String, required: true },
   settingsId: { type: String, required: true }
