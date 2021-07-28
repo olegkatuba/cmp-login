@@ -3,7 +3,7 @@ import { connect } from "mongoose";
 import { UserModel } from "./models/User";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import * as argon2 from "argon2";
+// import * as argon2 from "argon2";
 
 require("dotenv").config();
 
