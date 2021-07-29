@@ -62,7 +62,7 @@ app.post("/auth/apple", async (req: express.Request, res: express.Response, next
   }
 
   const doc = new UserModel({
-    provider: 'google',
+    provider: 'apple',
     id: sub,
     email,
     controllerId,
