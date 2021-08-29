@@ -1,8 +1,9 @@
 import express from "express";
 import { connect } from "mongoose";
 import cors from "cors";
-// import * as argon2 from "argon2";
 import authRouter from "./auth";
+import { UserModel } from "./models/User";
+import axios from "axios";
 
 require("dotenv").config();
 
@@ -19,6 +20,25 @@ app.get("/", (req: express.Request, res: express.Response) => {
 });
 
 app.use("/api/auth", authRouter);
+
+app.get("/api/consents/:provider/:userId", async (req: express.Request, res:  express.Response) => {
+  const users = await UserModel.find({
+    id: req.params.userId,
+    provider: req.params.provider,
+  }).exec();
+
+  Promise.all(users.map(async user => {
+    return {
+      hostname: user.hostname,
+      controllerId: user.controllerId,
+      settingsId: user.settingsId,
+      consents: await axios.get(`https://consents.usercentrics.eu/consentsHistory?controllerId=${user.controllerId}`).then(res => res.data)
+    }
+  })).then(users => {
+    res.json(users);
+  });
+  
+});
 
 async function bootstrap() {
   try {

@@ -1,9 +1,11 @@
 import { Schema, model } from "mongoose";
 
 interface User {
-  name: string;
-  email: string;
+  provider: string;
+  id: string;
   controllerId: string;
+  settingsId: string;
+  hostname: string;
 }
 
 const schema = new Schema<User>({

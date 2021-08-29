@@ -1,19 +1,23 @@
 import express from "express";
-import jwt from "jsonwebtoken";
+import * as argon2 from "argon2";
 import { UserModel } from "../models/User";
+import verifyAppleToken from "verify-apple-id-token";
 
 export default express
   .Router()
   .post("/", async (req: express.Request, res: express.Response, next) => {
     const { controllerId, token, settingsId, hostname } = req.body;
-    const decodedToken = jwt.decode(token, { json: true }) as {
-      sub: string;
-      email: string;
-    };
-    const { sub } = decodedToken;
+
+    const jwtClaims = await verifyAppleToken({
+      idToken: token,
+      clientId: process.env.APPLE_CLIENT_ID,
+    });
+
+    const { sub } = jwtClaims;
+    const hashedId = sub;
 
     const user = await UserModel.findOne({
-      id: sub,
+      id: hashedId,
       provider: "apple",
       hostname,
       settingsId,
@@ -26,7 +30,7 @@ export default express
 
     const doc = new UserModel({
       provider: "apple",
-      id: sub,
+      id: hashedId,
       controllerId,
       settingsId,
       hostname,
