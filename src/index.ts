@@ -27,17 +27,45 @@ app.get("/api/consents/:provider/:userId", async (req: express.Request, res:  ex
     provider: req.params.provider,
   }).exec();
 
-  Promise.all(users.map(async user => {
-    return {
-      hostname: user.hostname,
-      controllerId: user.controllerId,
-      settingsId: user.settingsId,
-      consents: await axios.get(`https://consents.usercentrics.eu/consentsHistory?controllerId=${user.controllerId}`).then(res => res.data)
-    }
-  })).then(users => {
-    res.json(users);
-  });
-  
+  const consents = Promise.all(users.map((user) => {
+    return axios.get(`https://consents.usercentrics.eu/consentsHistory?controllerId=${user.controllerId}`)
+      .then(res => res.data);
+  }));
+
+  const templates = Promise.all(users.map((user) => {
+    return axios.get(`https://api.usercentrics.eu/settings/${user.settingsId}/latest/en.json`)
+      .then(res => res.data)
+      .then((settings: any) => {
+        const templatesIds = settings.consentTemplates.map((t: any) => `${t.templateId}@${t.version}`);
+        return axios.get(`https://aggregator.service.usercentrics.eu/aggregate/en?templates=${templatesIds.join(',')}`);
+      })
+      .then(res => res.data)
+      .then(data => data.templates.reduce((obj: any, t: any) => {
+        obj[t.templateId] = t;
+        obj[t.templateId].consents = [];
+        return obj;
+      }, {}));
+  }));
+
+  Promise.all([consents, templates])
+    .then(([consents, templates]) => {
+      return users.map((user, i) => {
+        consents[i].forEach((consent: any) => {
+          const template = templates[i][consent.templateId];
+          if (template) {
+            template.consents.push(consent);
+          }
+        });
+        return {
+          hostname: user.hostname,
+          controllerId: user.controllerId,
+          settingsId: user.settingsId,
+          templates: Object.values(templates[i]),
+        }
+      })
+    }).then(users => {
+      res.json(users);
+    });
 });
 
 async function bootstrap() {

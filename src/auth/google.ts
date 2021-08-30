@@ -32,16 +32,25 @@ export default express
     }).exec();
 
     if (user) {
-      res.send(user);
+      res.send({
+        controllerId: user.controllerId,
+        provider: user.provider,
+        consentsHistoryLink: `${process.env.CONSENTS_HISTORY_URL}/google/${user.id}`
+      });
       return next();
     }
 
-    const doc = new UserModel({
+    const doc = await new UserModel({
       provider: "google",
       id: hashedId,
       controllerId,
       settingsId,
       hostname,
+    }).save();
+    
+    res.send({
+      controllerId: doc.controllerId,
+      provider: doc.provider,
+      consentsHistoryLink: `${process.env.CONSENTS_HISTORY_URL}/google/${doc.id}`
     });
-    res.send(await doc.save());
   });
