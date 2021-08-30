@@ -1,0 +1,2 @@
+import{O as e,R as s,M as o}from"./index.module.js";var a=function(e){this.secondLayerUrl=e.moreInfoButtonUrl||null,this.showSecondLayer=e.btnMoreInfoIsVisible},n=function(s){this.isOverlayEnabled=e(s)},i=function(e){this.isOverlayEnabled=s(e),this.showCategoriesTab=o(e.secondLayer.tabsCategoriesIsEnabled,!0),this.showServicesTab=o(e.secondLayer.tabsServicesIsEnabled,!0)};export{i,a as n,n as o};
+//# sourceMappingURL=SecondLayerUI-12b92db4-866bc446.js.map

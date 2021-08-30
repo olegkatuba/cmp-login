@@ -1,12 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <script id="usercentrics-cmp" src="https://cmp-login.herokuapp.com/bundle.js" data-settings-id="f0n6WtiZX" async></script>
-</body>
+  <head>
+    <title>Usercentrics CMP</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1"/>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.0/dist/showdown.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style type="text/css">
+      body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      .content {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+      @media (max-width: 700px) {
+        .content {
+          margin: 0 auto;
+          width: auto;
+        }
+      }
+      .prettyprint {
+        display: block;
+        padding: 1em;
+        background-color: lightgrey;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+      .button {
+        display: inline-block;
+        margin: 12px 11px 14px 0;
+        background-color: Crimson;
+        border-radius: 5px;
+        color: white;
+        padding: .5em;
+        text-align: center;
+        text-decoration: none;
+        width: 169px;
+      }
+      .button:focus,
+      .button:hover {
+        background-color: FireBrick;
+        color: white;
+      }
+      .button:link, .button:visited {
+        color: white;
+      }
+      .header {
+        display: flex;
+      }
+      .flex-right {
+        margin: 0 0 0 auto;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      select {
+        max-height: 20px;
+      }
+      #changelog h1 {
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+      #changelog {
+        font-family: monospace;
+      }
+      #changelog code {
+        color: rebeccapurple;
+      }
+      .gray {
+        background-color: lightgrey;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <div class="header">
+        <h1 id="title">Usercentrics UI</h1>
+        <select id="versions" class="flex-right" onchange="location = this.value"> </select>
+      </div>
+      <a class="button js-button" href="./bundle.js" download="bundle.js"><i class="fa fa-download"></i> bundle.js</a>
+      <a class="button js-button" href="./bundle_legacy.js" download="bundle_legacy.js"><i class="fa fa-download"></i> bundle_legacy.js</a>
+      <a class="button js-button" href="./README.md" download="README.md"><i class="fa fa-download"></i> README.md</a>
+      <p>To add the UI to your own website, add the following script tag to your website's head tag: </p>
+      <code class="prettyprint">&lt;script id="usercentrics-cmp" data-settings-id="YOUR_SETTINGS_ID" src="PATH_TO_UC_BUNDLE_JS"&gt;&lt;/script&gt;</code>
+      <p>If you prefer not to host the bundle yourself, use:</p>
+      <code id="bundle-url" class="prettyprint"> </code>
+      <p>If you need to support Internet Explorer 11 as well, point to the legacy_bundle.js instead of bundle.js in the src attribute.</p>
+      <p>If you need TCF, add <i>data-tcf-enabled</i> as attribute to your script tag. Note, that TCF still needs to be enabled in your Admin Interface (Settings) as well.</p>
+      <p>Note that the legacy bundle is bigger in size as it uses polyfills.</p>
+    </div>
+
+    <div class="content gray">
+      <div id="changelog"></div>
+    </div>
+    <script>
+      const currentVersion = window.location.pathname.match(/\/(\d+\.\d+\.\d+|latest)/)[1];
+      document.getElementById("title").innerText += ` - ${currentVersion}`;
+      document.getElementById("bundle-url").innerText += `<script id="usercentrics-cmp" data-settings-id="YOUR_SETTINGS_ID" src="https://app.usercentrics.eu/browser-ui/${currentVersion}/bundle.js"><\/script>`;
+
+      const loadVersions = () => {
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.onload = function () {
+          if (xmlhttp.status === 200) {
+            const versions = xmlhttp.responseText.split("\n");
+            let options = "";
+            versions.forEach(version => {
+              if (version) {
+                const href = `/browser-ui/${version}/index.html`;
+                const selected = version === currentVersion ? "selected" : "";
+                options += `<option ${selected} value=${href}>${version}</option>`;
+              }
+            });
+            document.getElementById("versions").innerHTML += options;
+          }
+        };
+        xmlhttp.open("GET", "../versions");
+        xmlhttp.send();
+      };
+
+      const loadChangelog = () => {
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.onload = function () {
+          if (xmlhttp.status === 200) {
+            const converter = new showdown.Converter();
+            const html = converter.makeHtml(xmlhttp.responseText);
+            document.getElementById("changelog").innerHTML = html;
+          }
+        };
+        xmlhttp.open("GET", "./CHANGELOG.md");
+        xmlhttp.send();
+      };
+
+      loadVersions();
+      loadChangelog();
+    </script>
+  </body>
 </html>

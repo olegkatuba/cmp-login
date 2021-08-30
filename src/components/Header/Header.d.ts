@@ -1,0 +1,20 @@
+import { FunctionalComponent } from 'preact';
+import { LogoCustomization } from '@usercentrics/cmp-browser-sdk';
+declare type Props = {
+    ariaLabel: string;
+    closeAriaLabel: string;
+    fullScreenAriaLabel: string;
+    logo: LogoCustomization;
+    onClose?: () => void;
+    onFullScreen?: () => void;
+    onLanguageChange: (selectedLanguage: string) => void;
+    showCloseButton?: boolean;
+    showFullScreenButton?: boolean;
+    showLanguage?: boolean;
+    title: string;
+    user: any;
+    showSignIn: boolean;
+    onLogInClick: () => any;
+};
+declare const Header: FunctionalComponent<Props>;
+export default Header;

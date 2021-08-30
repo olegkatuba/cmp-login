@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Usercentrics CMP preview</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
+    <meta name="description" content="This is the usercentrics consent management platform preview." />
+    <link rel="dns-prefetch" href="//app.usercentrics.eu" />
+    <link rel="dns-prefetch" href="//api.usercentrics.eu" />
+    <link rel="dns-prefetch" href="//aggregator.service.usercentrics.eu" />
+    <link rel="preconnect" href="https://app.usercentrics.eu" />
+    <link rel="preconnect" href="https://api.usercentrics.eu" />
+    <link rel="preconnect" href="https://aggregator.service.usercentrics.eu" />
+
+    <!-- Instead of adding the usercentrics script as usual, we build the script dynamically based on the URL-parameter.
+    This way we are able to open the page with different settingsIds and controllerIds -->
+    <script type="text/javascript">
+      // URLSearchParams polyfill for IE11
+      (function (w) {
+        w.URLSearchParams =
+          w.URLSearchParams ||
+          function (searchString) {
+            var thisContext = this;
+            thisContext.searchString = searchString;
+            thisContext.get = function (name) {
+              var results = new RegExp('[?&]' + name + '=([^&#]*)').exec(thisContext.searchString);
+
+              if (results == null) {
+                return null;
+              }
+
+              return decodeURI(results[1]) || 0;
+            };
+          };
+      })(window);
+
+      var initBundleSuccess = false;
+
+      function initBundle() {
+        if (!initBundleSuccess && document.readyState !== 'loading') {
+          initBundleSuccess = true;
+
+          var urlParams = new URLSearchParams(window.location.search);
+          var settingsId = urlParams.get('settings-id');
+          var controllerId = urlParams.get('controller-id');
+          var language = urlParams.get('language');
+          var loadLegacyVersion = urlParams.get('legacy') !== null;
+          var loadModuleVersion = urlParams.get('module') !== null;
+          var sandbox = urlParams.get('sandbox');
+          var isTcfEnabled = urlParams.get('tcf') !== null;
+          var countryCode = urlParams.get('countryCode');
+          var regionCode = urlParams.get('regionCode');
+          var euMode = urlParams.get('euMode');
+          var blockDataLayerPush = urlParams.get('block-data-layer-push');
+          var avoidPrefetchServices = urlParams.get('avoidPrefetchServices');
+          var embeddings = urlParams.get('embeddings');
+          var suppressCmpDisplay = urlParams.get('suppressCmpDisplay');
+          var loader = urlParams.get('loader');
+          var abTesting = urlParams.get('abTesting');
+
+          if (loadLegacyVersion) {
+            document.getElementsByTagName('body')[0].classList.add('legacy');
+          }
+
+          if (!settingsId) {
+            if (
+              location.href.indexOf('/usercentrics-integration-test-browser-ui/develop/') !== -1 ||
+              location.href.indexOf('/usercentrics-integration-test-browser-ui/integration/') !== -1
+            ) {
+              settingsId = 'u4_zoWyvU'; // sandbox settings id
+            } else {
+              settingsId = 'GVl-ixMH'; // Browser UI TCF2 settings id
+              isTcfEnabled = true; // tcf is enabled
+            }
+          }
+
+          var script = document.createElement('script');
+          script.id = 'usercentrics-cmp';
+          script.src = loader
+            ? './loader.js'
+            : loadLegacyVersion
+            ? './bundle_legacy.js'
+            : loadModuleVersion
+            ? './index.module.js'
+            : './bundle.js';
+          script.async = true;
+          script.setAttribute('data-settings-id', settingsId);
+
+          if (loadModuleVersion) {
+            script.type = 'module';
+          }
+          if (isTcfEnabled) {
+            script.setAttribute('data-tcf-enabled', '');
+          }
+          if (controllerId) {
+            script.setAttribute('data-controller-id', controllerId);
+          }
+          if (language) {
+            script.setAttribute('data-language', language);
+          }
+          if (sandbox) {
+            script.setAttribute('data-sandbox', sandbox);
+          }
+          if (countryCode) {
+            window.UC_UI_USER_COUNTRY_DATA = {
+              code: countryCode.substr(0, 2).toUpperCase(),
+              name: 'Custom Country',
+              regionCode: regionCode ? regionCode.substr(0, 2).toUpperCase() : '',
+            };
+          }
+          if (suppressCmpDisplay) {
+            window.UC_UI_SUPPRESS_CMP_DISPLAY = true;
+          }
+          if (euMode) {
+            script.setAttribute('data-eu-mode', '');
+          }
+          if (blockDataLayerPush) {
+            script.setAttribute('data-block-data-layer-push', '');
+          }
+          if (abTesting) {
+            script.setAttribute('data-ab-testing', abTesting);
+          }
+
+          if (avoidPrefetchServices) {
+            script.setAttribute('data-avoid-prefetch-services', '');
+          }
+
+          if (embeddings) {
+            var root = document.createElement('div');
+            var h1 = document.createElement('h1');
+            h1.innerText = 'Embeddings';
+            root.appendChild(h1);
+
+            switch (embeddings) {
+              case 'uc-embed':
+              default:
+                var h2 = document.createElement('h2');
+                h2.innerText = 'class="uc-embed"';
+                root.appendChild(h2);
+
+                var ucEmbed = document.createElement('div');
+                ucEmbed.setAttribute('class', 'uc-embed');
+                root.appendChild(ucEmbed);
+                break;
+
+              case 'uc-embed-category':
+                var h3 = document.createElement('h3');
+                h3.innerText = 'No UC Style & Categories';
+                root.appendChild(h3);
+
+                var ucEmbedGdpr = document.createElement('div');
+                ucEmbedGdpr.setAttribute('class', 'uc-embed');
+                ucEmbedGdpr.setAttribute('uc-embedding-type', 'category');
+                ucEmbedGdpr.setAttribute('uc-show-toggle', 'false');
+                ucEmbedGdpr.setAttribute('uc-styling', 'false');
+                root.appendChild(ucEmbedGdpr);
+                break;
+
+              case 'uc-embed-style':
+                var h3 = document.createElement('h3');
+                h3.innerText = 'With UC Style';
+                root.appendChild(h3);
+
+                var ucEmbedGdpr = document.createElement('div');
+                ucEmbedGdpr.setAttribute('class', 'uc-embed', 'uc-embed-styled');
+                ucEmbedGdpr.setAttribute('uc-embedding-type', 'all');
+                ucEmbedGdpr.setAttribute('uc-show-toggle', 'false');
+                ucEmbedGdpr.setAttribute('uc-styling', 'true');
+                ucEmbedGdpr.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedGdpr);
+                break;
+
+              case 'uc-embed-style-toggles':
+                var h3 = document.createElement('h3');
+                h3.innerText = 'With UC Style & Toggles';
+                root.appendChild(h3);
+
+                var ucEmbedGdpr = document.createElement('div');
+                ucEmbedGdpr.setAttribute('class', 'uc-embed', 'uc-embed-styled');
+                ucEmbedGdpr.setAttribute('uc-embedding-type', 'all');
+                ucEmbedGdpr.setAttribute('uc-show-toggle', 'true');
+                ucEmbedGdpr.setAttribute('uc-styling', 'true');
+                ucEmbedGdpr.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedGdpr);
+                break;
+
+              case 'uc-embed-style-category':
+                var h3 = document.createElement('h3');
+                h3.innerText = 'With UC Style & Categories';
+                root.appendChild(h3);
+
+                var ucEmbedGdpr = document.createElement('div');
+                ucEmbedGdpr.setAttribute('class', 'uc-embed', 'uc-embed-styled');
+                ucEmbedGdpr.setAttribute('uc-embedding-type', 'category');
+                ucEmbedGdpr.setAttribute('uc-show-toggle', 'false');
+                ucEmbedGdpr.setAttribute('uc-styling', 'true');
+                ucEmbedGdpr.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedGdpr);
+                break;
+
+              case 'uc-embed-style-category-toggles':
+                var h3 = document.createElement('h3');
+                h3.innerText = 'With UC Style & Categories & Toggles';
+                root.appendChild(h3);
+
+                var ucEmbedGdpr = document.createElement('div');
+                ucEmbedGdpr.setAttribute('class', 'uc-embed', 'uc-embed-styled');
+                ucEmbedGdpr.setAttribute('uc-embedding-type', 'category');
+                ucEmbedGdpr.setAttribute('uc-show-toggle', 'true');
+                ucEmbedGdpr.setAttribute('uc-styling', 'true');
+                ucEmbedGdpr.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedGdpr);
+                break;
+
+              case 'tcfdefault':
+                var h3Vendor = document.createElement('h3');
+                h3Vendor.innerText = 'tcfdefault';
+                root.appendChild(h3Vendor);
+
+                var ucEmbedTcf = document.createElement('div');
+                ucEmbedTcf.setAttribute('class', 'uc-embed-tcf');
+                ucEmbedTcf.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedTcf);
+                break;
+
+              case 'vendor-uc':
+                var h3Vendor = document.createElement('h3');
+                h3Vendor.innerText = 'With UC Style & Custom Headlines';
+                root.appendChild(h3Vendor);
+
+                var h4Vendor = document.createElement('h4');
+                h4Vendor.innerText = 'uc-embedding-type="vendor":';
+                root.appendChild(h4Vendor);
+
+                var ucEmbedTcfVendor = document.createElement('div');
+                ucEmbedTcfVendor.setAttribute('class', 'uc-embed-tcf');
+                ucEmbedTcfVendor.setAttribute('uc-embedding-type', 'vendor');
+                ucEmbedTcfVendor.setAttribute('uc-embedding-title', 'Custom-Headline');
+                ucEmbedTcfVendor.setAttribute('uc-embedding-vendors', 'Custom-IAB_V-Headline');
+                ucEmbedTcfVendor.setAttribute('uc-embedding-non-iab-vendors', 'Custom-NON_IAB_V-Headline');
+                ucEmbedTcfVendor.setAttribute('uc-styling', 'true');
+                ucEmbedTcfVendor.style = 'width: 50%; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedTcfVendor);
+                break;
+
+              case 'purpose-uc':
+                var h3Vendor = document.createElement('h3');
+                h3Vendor.innerText = 'With UC Style & Custom Headlines';
+                root.appendChild(h3Vendor);
+
+                var h4Purpose = document.createElement('h4');
+                h4Purpose.innerText = 'uc-embedding-type="purpose":';
+                root.appendChild(h4Purpose);
+
+                var ucEmbedTcfPurpose = document.createElement('div');
+                ucEmbedTcfPurpose.setAttribute('class', 'uc-embed-tcf');
+                ucEmbedTcfPurpose.setAttribute('uc-embedding-type', 'purpose');
+                ucEmbedTcfPurpose.setAttribute('uc-embedding-title', 'Custom-Headline');
+                ucEmbedTcfPurpose.setAttribute('uc-embedding-vendors', 'Custom-IAB_P-Headline');
+                ucEmbedTcfPurpose.setAttribute('uc-embedding-non-iab-vendors', 'Custom-NON_IAB_P-Headline');
+                ucEmbedTcfPurpose.setAttribute('uc-styling', 'true');
+                ucEmbedTcfPurpose.style =
+                  'width: 50%; margin-top: 40px; margin-left: 50%; transform: translate(-50%, 0%)';
+                root.appendChild(ucEmbedTcfPurpose);
+                break;
+
+              case 'vendor-nostyle':
+                var h3VendorDefault = document.createElement('h3');
+                h3VendorDefault.innerText = 'No UC Style & Default Values';
+                root.appendChild(h3VendorDefault);
+                var h4Vendor = document.createElement('h4');
+                h4Vendor.innerText = 'uc-embedding-type="vendor":';
+                root.appendChild(h4Vendor);
+
+                var ucEmbedTcfVendorNoStyle = document.createElement('div');
+                ucEmbedTcfPurpose.setAttribute('class', 'uc-embed-tcf');
+                ucEmbedTcfPurpose.setAttribute('uc-embedding-type', 'vendor');
+                ucEmbedTcfPurpose.setAttribute('uc-styling', 'false');
+                ucEmbedTcfPurpose.style =
+                  'width: 50%;padding: 30px;background-color: bisque;margin-top: 40px;margin-left: 50%;transform: translate(-50%, 0%);';
+                root.appendChild(ucEmbedTcfVendorNoStyle);
+                break;
+
+              case 'purpose-nostyle':
+                var h3Vendor = document.createElement('h3');
+                h3Vendor.innerText = 'With UC Style & Custom Headlines';
+                root.appendChild(h3Vendor);
+
+                var h4Purpose = document.createElement('h4');
+                h4Purpose.innerText = 'uc-embedding-type="purpose":';
+                root.appendChild(h4Purpose);
+
+                var ucEmbedTcfPurposeNoStyle = document.createElement('div');
+                ucEmbedTcfPurposeNoStyle.setAttribute('class', 'uc-embed-tcf');
+                ucEmbedTcfPurposeNoStyle.setAttribute('uc-embedding-type', 'purpose');
+                ucEmbedTcfPurposeNoStyle.setAttribute('uc-styling', 'false');
+                ucEmbedTcfPurposeNoStyle.style =
+                  'width: 50%;padding: 30px;background-color: rgb(196, 255, 219);margin-top: 40px;margin-left: 50%;transform: translate(-50%, 0%);';
+                root.appendChild(ucEmbedTcfPurposeNoStyle);
+
+                break;
+            }
+            document.body.appendChild(root);
+          }
+
+          script.setAttribute('data-settings-cache', Date.now().toString());
+          document.head.appendChild(script);
+        }
+      }
+
+      // test if the custom event is fired in the right moment
+      window.addEventListener('UC_UI_INITIALIZED', function () {
+        if (window.UC_UI == null || !window.UC_UI.isInitialized()) {
+          throw new Error('UC_UI was not initialized');
+        }
+      });
+
+      // Add the usercentrics script tag with the custom settingsId and controllerId to the document body
+      (function () {
+        if (document.readyState !== 'complete') {
+          document.addEventListener('DOMContentLoaded', function () {
+            initBundle();
+          });
+        } else {
+          initBundle();
+        }
+      })();
+    </script>
+    <style type="text/css">
+      body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica,
+          Arial, sans-serif;
+        word-break: break-word;
+      }
+
+      body.legacy {
+        background-color: red;
+      }
+
+      .content {
+        max-width: 800px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+
+      .uc-embed-styled,
+      .uc-embed-tcf {
+        width: 50%;
+        margin-left: 25%;
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          margin: 0 auto;
+          width: auto;
+        }
+
+        .uc-embed-styled,
+        .uc-embed-tcf {
+          display: block;
+          width: auto;
+          margin: 0 10px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <h1>Usercentrics CMP preview</h1>
+      <h2>GDPR</h2>
+      <p>
+        Whether or not your website is GDPR-compliant can easily be determined by ANYONE with very little technical
+        knowledge, making this one of the most vulnerable aspects of your business.
+      </p>
+      <p>
+        Scan your website for free and check if your use of cookies and tracking technologies is compliant with the
+        GDPR.
+      </p>
+      <h2>TCF</h2>
+      <p>
+        Numerous essential actors and technology providers in the AdTech landscape have already committed themselves to
+        support this framework. First and foremost Google, but also Criteo, Xandr, Adition, Quantcast, Taboola,
+        MediaMath, etc.
+      </p>
+      <p>
+        In other words: many vendors will no longer support advertising where no associated IAB Transparency & Consent
+        String (TC String) can be queried via the website’s CMP. Without this TC String, the vendor cannot be sure that
+        there is a legal basis for the display of advertising. This is a procedure that is likely to become increasingly
+        prevalent among vendors.
+      </p>
+      <h2>CCPA</h2>
+      <p>
+        The California Consumer Privacy Act (CCPA) (in force since July 1, 2020) is a privacy law that applies to 40
+        million California residents (even on vacation) and the hundreds of thousands of businesses that interact with
+        them.
+      </p>
+      <p>
+        The CCPA is therefore not solely aimed at businesses based in California. It affects any business that processes
+        the personal information of consumers in California – if certain criteria are fulfilled.
+      </p>
+      <button onclick="javascript:UC_UI.showFirstLayer();">Show first layer</button>
+      <button onclick="javascript:UC_UI.showSecondLayer();">Show second layer</button>
+    </div>
+  </body>
+</html>

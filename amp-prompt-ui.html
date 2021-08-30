@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html style="background: white; height: 100vh; width: 100vw">
+  <head>
+    <title>Usercentrics CMP AMP Prompt UI</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
+  </head>
+  <body>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const script = document.createElement('script');
+      script.id = 'usercentrics-cmp';
+      script.src = './bundle.js';
+      script.async = true;
+      script.setAttribute('data-amp-enabled', '');
+      if (urlParams.get('sandbox')) {
+        script.setAttribute('data-sandbox', '');
+      }
+      if (urlParams.get('countryCode')) {
+        window.UC_UI_USER_COUNTRY_DATA = {
+          code: urlParams.get('countryCode').substr(0, 2).toUpperCase(),
+          name: 'Custom Country',
+          regionCode: urlParams.get('regionCode') ? urlParams.get('regionCode').substr(0, 2).toUpperCase() : '',
+        };
+      }
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

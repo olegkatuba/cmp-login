@@ -1,0 +1,22 @@
+import { Service } from '@usercentrics/cmp-browser-sdk';
+import { FunctionalComponent } from 'preact';
+import { ScrollToId } from '../../App.helpers';
+import { UICategory } from '../../contexts/CategoryContext';
+declare type ItemProps = {
+    categories: UICategory[];
+    getItemSize: (index: number) => number;
+    hasTopSpace?: boolean;
+    hideToggle: boolean;
+    id: number;
+    index: number;
+    onOpenSubServiceDetail: (subService: Service) => void;
+    onToggleService: (checked: boolean, id: string) => void;
+    onToggleAllServices?: () => void;
+    services: Service[];
+    setItemSize: (index: number, height: number) => void;
+    showToggles?: boolean;
+    title?: string;
+    scrollToId?: ScrollToId;
+};
+declare const VirtualServiceItem: FunctionalComponent<ItemProps>;
+export default VirtualServiceItem;

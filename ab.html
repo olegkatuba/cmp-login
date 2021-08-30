@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Usercentrics CMP preview</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <meta name="description" content="This is the usercentrics consent management platform preview." />
+    <link rel="dns-prefetch" href="//app.usercentrics.eu" />
+    <link rel="dns-prefetch" href="//api.usercentrics.eu" />
+    <link rel="dns-prefetch" href="//aggregator.service.usercentrics.eu" />
+    <link rel="preconnect" href="https://app.usercentrics.eu" />
+    <link rel="preconnect" href="https://api.usercentrics.eu" />
+    <link rel="preconnect" href="https://aggregator.service.usercentrics.eu" />
+
+    <script src="https://www.googleoptimize.com/optimize.js?id=OPT-PGS42DX"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-197969836-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+
+      gtag('config', 'UA-197969836-1');
+    </script>
+    <script>
+      window.UC_EXPERIMENT = {
+        v1: {
+          firstLayer: {
+            isOverlayEnabled: false,
+            variant: 'WALL',
+          },
+          privacyButtonIsVisible: false,
+          secondLayer: {
+            isOverlayEnabled: false,
+            side: 'LEFT',
+            variant: 'SIDE',
+          },
+        },
+      };
+    </script>
+    <script id="usercentrics-cmp" src="./bundle.js" async data-settings-id="YQwbpgLZ3"></script>
+    <style type="text/css">
+      body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica,
+          Arial, sans-serif;
+        word-break: break-word;
+      }
+
+      .content {
+        max-width: 800px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          margin: 0 auto;
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <h1>A/B Testing</h1>
+      <button onclick="javascript:UC_UI.showFirstLayer();">Show first layer</button>
+      <button onclick="javascript:UC_UI.showSecondLayer();">Show second layer</button>
+    </div>
+  </body>
+</html>

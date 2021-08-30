@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Usercentrics CMP comparison</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <meta name="description" content="CMP comparison" />
+
+    <!-- Instead of adding the usercentrics script as usual, we build the script dynamically based on the URL-parameter.
+   This way we are able to open the page with different settingsIds and controllerIds -->
+    <script type="text/javascript">
+      // URLSearchParams polyfill for IE11
+      (function (w) {
+        w.URLSearchParams =
+          w.URLSearchParams ||
+          function (searchString) {
+            var thisContext = this;
+            thisContext.searchString = searchString;
+            thisContext.get = function (name) {
+              var results = new RegExp('[?&]' + name + '=([^&#]*)').exec(thisContext.searchString);
+
+              if (results == null) {
+                return null;
+              }
+
+              return decodeURI(results[1]) || 0;
+            };
+          };
+      })(window);
+
+      function createLink(href, rel) {
+        var link = document.createElement('link');
+        link.rel = rel;
+        link.href = href;
+        document.head.appendChild(link);
+      }
+
+      function createLinks(links) {
+        if (links && typeof links === 'array' && links.length > 0) {
+          links.forEach(({ href, rel }) => {
+            createLink(href, rel);
+          });
+        }
+      }
+
+      function createContenScript(content) {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.text = content;
+        document.head.appendChild(script);
+      }
+
+      function createScript(links, src, attributes, async, type, scriptId) {
+        createLinks(links);
+
+        var script = document.createElement('script');
+        script.src = src;
+
+        if (scriptId) {
+          script.id = scriptId;
+        }
+
+        if (async) {
+          script.async = true;
+        }
+
+        if (type) {
+          script.type = type;
+        }
+
+        if (attributes && attributes.length > 0) {
+          attributes.forEach(({ name, value }) => {
+            script.setAttribute(name, value);
+          });
+        }
+
+        document.head.appendChild(script);
+      }
+
+      function createUsercentricsScript() {
+        const links = [
+          { href: 'dns-prefetch', rel: '//app.usercentrics.eu' },
+          { href: 'dns-prefetch', rel: '//api.usercentrics.eu' },
+          { href: 'dns-prefetch', rel: '//aggregator.service.usercentrics.eu' },
+          { href: 'preconnect', rel: 'https://app.usercentrics.eu' },
+          { href: 'preconnect', rel: 'https://api.usercentrics.eu' },
+          { href: 'preconnect', rel: 'https://aggregator.service.usercentrics.eu' },
+        ];
+
+        const settingsId = 'zJfHdLzdE';
+        const src = 'https://app.usercentrics.eu/browser-ui/latest/bundle.js';
+        const attributes = [
+          { name: 'data-settings-id', value: settingsId },
+          { name: 'data-settings-cache', value: Date.now().toString() },
+        ];
+        const scriptId = 'usercentrics-cmp';
+
+        createScript(links, src, attributes, true, 'module', scriptId);
+      }
+
+      function createConsentManager() {
+        const links = [
+          { href: 'dns-prefetch', rel: '//consentmanager.mgr.consensu.org' },
+          { href: 'preconnect', rel: 'https://cdn.consentmanager.mgr.consensu.org' },
+        ];
+
+        const settingsId = '10954';
+        const src = 'https://cdn.consentmanager.mgr.consensu.org/delivery/automatic.min.js';
+        const attributes = [
+          { name: 'data-cmp-id', value: settingsId },
+          { name: 'data-cmp-host', value: 'consentmanager.mgr.consensu.org' },
+          { name: 'data-cmp-cdn', value: 'cdn.consentmanager.mgr.consensu.org' },
+        ];
+
+        createScript(links, src, attributes, true, 'module');
+
+        window.location.hash = 'cmpscreen';
+      }
+
+      function createCookieFirst() {
+        const links = [
+          { href: 'dns-prefetch', rel: '//consent.cookiefirst.com' },
+          { href: 'preconnect', rel: 'https://consent.cookiefirst.com' },
+        ];
+
+        const settingsId = '07e7d7a1-854e-4a43-9cb0-00317d998c39';
+        const src = 'https://consent.cookiefirst.com/banner.js';
+        const attributes = [{ name: 'data-cookiefirst-key', value: settingsId }];
+
+        createScript(links, src, attributes);
+      }
+
+      function createIubenda() {
+        const links = [
+          { href: 'dns-prefetch', rel: '//cdn.iubenda.com' },
+          { href: 'preconnect', rel: 'https://cdn.iubenda.com' },
+        ];
+
+        const attributes = [{ name: 'charset', value: 'UTF-8' }];
+
+        createContenScript(`
+          var _iub = _iub || [];
+          _iub.csConfiguration = {
+            "whitelabel": false,
+            "lang": "en",
+            "siteId": 1731993,
+            "countryDetection": true,
+            "priorConsent": false,
+            "gdprAppliesGlobally": false,
+            "consentOnDocument": true,
+            "consentOnHorizontalScroll": true,
+            "perPurposeConsent": true,
+            "cookiePolicyInOtherWindow": true,
+            "enableCMP": true,
+            "cookiePolicyId": 98241626,
+            "banner": {
+              "acceptButtonDisplay": true,
+              "customizeButtonDisplay": true,
+              "position": "float-top-center",
+              "logo": "https://1nf2x118nwr23j3l7o2i40qd-wpengine.netdna-ssl.com/wp-content/uploads/2019/12/usercentrics-logo.min_.svg"
+            }
+          };
+        `);
+        createScript(links, '//cdn.iubenda.com/cs/tcf/stub-v2.js', []);
+        createScript([], '//cdn.iubenda.com/cs/iubenda_cs.js', attributes, true);
+      }
+
+      function createUniconsent() {
+        const links = [
+          { href: 'dns-prefetch', rel: '//cmp.uniconsent.com' },
+          { href: 'preconnect', rel: 'https://cmp.uniconsent.com' },
+        ];
+
+        createContenScript(`
+          window._unic_start = true;
+          window.__cmp = window.__cmp || function () {
+            window.__cmp.commandQueue = window.__cmp.commandQueue || [];
+            window.__cmp.commandQueue.push(arguments);
+          };
+          window.__cmp.commandQueue = window.__cmp.commandQueue || [];
+          window.__cmp.receiveMessage = function (event) {
+            var data = event && event.data && event.data.__cmpCall;
+            if (data) {
+              var callId = data.callId, command = data.command, parameter = data.parameter;
+              window.__cmp.commandQueue.push({
+                callId: callId, command: command, parameter: parameter, event: event
+              });
+            }
+          };
+          if(window.attachEvent) {
+            window.attachEvent("onmessage", function (event) {
+              window.__cmp.receiveMessage(event);
+            }, false);
+          } else {
+            window.addEventListener("message", function (event) {
+              window.__cmp.receiveMessage(event);
+            }, false);
+          }
+          function addLocatorFrame() {
+            if (!window.frames['__cmpLocator']) {
+              if (document.body) {
+                var frame = document.createElement('iframe');
+                frame.style.display = 'none';
+                frame.name = '__cmpLocator';
+                document.body.appendChild(frame);
+              } else {
+                setTimeout(addLocatorFrame, 5);
+              }
+            }
+          }
+          addLocatorFrame();
+          window.__uspapi = window.__uspapi || function () {
+              window.__uspapi.commandQueue = window.__uspapi.commandQueue || [];
+              window.__uspapi.commandQueue.push(arguments);
+          };
+          window.__uspapi.receiveMessage = function (event) {
+              var data = event && event.data && event.data.__uspapiCall;
+              if (data) {
+                  var callId = data.callId, command = data.command, parameter = data.parameter;
+                  window.__uspapi.commandQueue.push({
+                      callId: callId, command: command, parameter: parameter, event: event
+                  });
+              }
+          };
+          if(window.attachEvent) {
+              window.attachEvent("onmessage", function (event) {
+                  window.__uspapi.receiveMessage(event);
+              }, false);
+          } else {
+              window.addEventListener("message", function (event) {
+                  window.__uspapi.receiveMessage(event);
+              }, false);
+          }
+          function addLocatorFrameUSP() {
+              if (!window.frames['__uspapiLocator']) {
+                  if (document.body) {
+                      var frame = document.createElement('iframe');
+                      frame.style.display = 'none';
+                      frame.name = '__uspapiLocator';
+                      document.body.appendChild(frame);
+                  } else {
+                      setTimeout(addLocatorFrameUSP, 5);
+                  }
+              }
+          }
+          addLocatorFrameUSP();
+        `);
+        createScript([], 'https://cmp.uniconsent.com/t/48a3e48836.cmp.js', [], true);
+      }
+
+      var initBundleSuccess = false;
+      function initBundle() {
+        if (!initBundleSuccess && document.readyState !== 'loading') {
+          initBundleSuccess = true;
+
+          var urlParams = new URLSearchParams(window.location.search);
+          var cmp = urlParams.get('cmp');
+
+          switch (cmp) {
+            case 'consentmanager': {
+              createConsentManager();
+              break;
+            }
+            case 'cookiefirst': {
+              createCookieFirst();
+              break;
+            }
+            case 'iubenda': {
+              createIubenda();
+              break;
+            }
+            case 'uniconsent': {
+              createUniconsent();
+              break;
+            }
+            default: {
+              createUsercentricsScript();
+            }
+          }
+        }
+      }
+
+      (function () {
+        if (document.readyState !== 'complete') {
+          document.addEventListener('DOMContentLoaded', function () {
+            initBundle();
+          });
+        } else {
+          initBundle();
+        }
+      })();
+    </script>
+
+    <style type="text/css">
+      body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', 'Helvetica Neue', Helvetica,
+          Arial, sans-serif;
+      }
+      .content {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.02);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <h1>CMP comparison</h1>
+      <p>Before running the Lighthose score please, select the CMP you want to use</p>
+      <ul>
+        <li>Consent Manager: <code>?cmp=consentmanager</code></li>
+        <li>Cookie First: <code>?cmp=cookiefirst</code></li>
+        <li>Iubenda: <code>?cmp=iubenda</code></li>
+        <li>Uniconsent: <code>?cmp=uniconsent</code></li>
+        <li>Usercentrics: <code>?cmp=usercentrics</code></li>
+      </ul>
+    </div>
+  </body>
+</html>
