@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="google-signin-client_id"
+      content="718487203014-5ug9vgls4fcp4ntd9amg82dgpv6lpmkj.apps.googleusercontent.com"
+    />
+    <title>Usercentrics client</title>
+    <script src="https://apis.google.com/js/platform.js"></script>
+    <style>
+      .header {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+      }
+      #image {
+        border-radius: 50%;
+      }
+      .header > * {
+        margin: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div id="name"></div>
+      <div id="email"></div>
+      <img width="50" id="image" />
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+      <a href="#" onclick="signOut();">Sign out</a>
+    </div>
+    <main>
+      <h1>
+        Separated log in
+      </h1>
+    </main>
+    <script>
+      let user = null;
+      function updateUI() {
+        document.getElementById('name').innerText = user?.name ?? '';
+        document.getElementById('email').innerText = user?.email ?? '';
+        document.getElementById('image').src = user?.image ?? '';
+      }
+      function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log("ID: " + profile.getId());
+        console.log("Name: " + profile.getName());
+        console.log("Image URL: " + profile.getImageUrl());
+        console.log("Email: " + profile.getEmail());
+        user = {
+          name: profile.getName(),
+          email: profile.getEmail(),
+          image: profile.getImageUrl(),
+        };
+        updateUI();
+      }
+      function signOut() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+          console.log("User signed out.");
+          user = null;
+          updateUI();
+        });
+      }
+    </script>
+    <script
+      id="usercentrics-cmp"
+      src="./bundle.js"
+      data-settings-id="f0n6WtiZX"
+      async
+    ></script>
+  </body>
+</html>
