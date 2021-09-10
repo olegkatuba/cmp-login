@@ -9,10 +9,10 @@ export default express
   .post("/", async (req: express.Request, res: express.Response, next) => {
     const { controllerId, token, settingsId, hostname } = req.body;
 
-    const jwtClaims = jwt.decode(token);/*  await verifyAppleToken({
+    const jwtClaims = await verifyAppleToken({
       idToken: token,
       clientId: process.env.APPLE_CLIENT_ID,
-    }); */
+    });
 
     const { sub } = jwtClaims;
     const hashedId = sub;
