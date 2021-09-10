@@ -30,7 +30,7 @@
       <div id="email"></div>
       <img width="50" id="image" />
       <div class="g-signin2" data-onsuccess="googleSignIn"></div>
-      <a href="#" onclick="signOut();">Sign out</a>
+      <a href="#" onclick="googleSignOut();">Sign out</a>
     </div>
     <main>
       <h1>Shared log in</h1>
@@ -42,7 +42,7 @@
         document.getElementById("email").innerText = user?.email ?? "";
         document.getElementById("image").src = user?.image ?? "";
       }
-      function signOut() {
+      function googleSignOut() {
         var auth2 = gapi.auth2.getAuthInstance();
         auth2.signOut().then(function () {
           console.log("User signed out.");
