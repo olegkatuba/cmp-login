@@ -28,8 +28,8 @@ authRouter.get("/google/oidc", (req, res) => {
 authRouter.get("/apple/oidc", (req, res) => {
   const queryParams: any = {
     "response_type": "id_token%20code",
-    "scope": "name%20email",
-    "response_mode": "web_message",
+    // "scope": "name%20email",
+    "response_mode": "fragment",
     "v": "1.5.4",
     "redirect_uri": `${process.env.BASE_URL}/appleAuthRedirect.html`,
     "client_id": process.env.APPLE_CLIENT_ID,
