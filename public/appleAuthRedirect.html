@@ -3,8 +3,7 @@
           provider: "google",
           status: "success",
           token: location.hash.substring(
-            location.hash.indexOf("id_token=") + "id_token=".length,
-            location.hash.lastIndexOf("&authuser")
+            location.hash.indexOf("id_token=") + "id_token=".length
           ),
         },
         "*"
