@@ -21,15 +21,11 @@ class UserService {
       settingsId,
     }).exec();
 
-    if (user) {
-      return {
-        controllerId: user.controllerId,
-        provider: user.provider,
-        consentsHistoryLink: `${process.env.CONSENTS_HISTORY_URL}/${provider}/${user.id}`,
-      };
+    if (user?.controllerId) {
+      return user?.controllerId;
     }
 
-    const doc = await new UserModel({
+    const newUser = await new UserModel({
       provider,
       id: userId,
       controllerId,
@@ -37,7 +33,7 @@ class UserService {
       hostname,
     }).save();
 
-    return doc.controllerId;
+    return newUser.controllerId;
   }
 }
 
