@@ -1,19 +1,8 @@
 import express from "express";
 import * as argon2 from "argon2";
 import UserService from "../services/user";
-import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-async function verify(token: string) {
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
-  return payload;
-}
+import { renderPostMessageScript } from "../utils";
 
 export default express
   .Router()
@@ -21,7 +10,7 @@ export default express
     const provider = 'google';
     const { controllerId, token, settingsId, hostname } = req.body;
 
-    const payload = jwt.decode(token); // await verify(token).catch(console.error);
+    const payload = jwt.decode(token);
 
     const { sub } = payload as { sub: string };
     const userId = sub;
@@ -40,19 +29,45 @@ export default express
       consentsHistoryLink: `${process.env.CONSENTS_HISTORY_URL}/${provider}/${userId}`
     });
   })
-  .get("/auth", (req, res) => {
+  .get("/", (req, res) => {
+    const state = req.query.state;
     const queryParams: any = {
       "response_type": "id_token%20code",
+      "response_mode": "form_post",
+      "state": state,
       "scope": "email",
       "prompt": "select_account",
-      "redirect_uri": `${process.env.BASE_URL}/googleAuthRedirect.html`,
-      // "redirect_uri": `${process.env.BASE_URL}/api/auth/google/code`,
+      "redirect_uri": `${process.env.BASE_URL}/api/auth/google/callback`,
       "client_id": process.env.GOOGLE_CLIENT_ID,
       "access_type": "offline",
       "flowName": "GeneralOAuthFlow",
     };
     const queryString = Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`).join('&');
-    // window.open("https://accounts.google.com/o/oauth2/auth/oauthchooseaccount?redirect_uri=storagerelay%3A%2F%2Fhttp%2Flocalhost%3A8080%3Fid%3Dauth917580&response_type=permission%20id_token&scope=email%20profile%20openid&openid.realm&client_id=4357416598-q07c52qvdlt9tottmlo3c3mp723e0rf0.apps.googleusercontent.com&ss_domain=http%3A%2F%2Flocalhost%3A8080&fetch_basic_profile=true&gsiwebsdk=2&flowName=GeneralOAuthFlow", 'Google', params);
     const url = `https://accounts.google.com/o/oauth2/auth/oauthchooseaccount?${queryString}`;
     res.redirect(url);
+  })
+  .post(`/callback`, express.urlencoded({ extended: true }), async (req, res) => {
+    const provider = "google";
+    const { controllerId, settingsId, hostname } = JSON.parse(
+      Buffer.from(req.body.state, "base64").toString()
+    );
+  
+    const payload = jwt.decode(req.body.id_token);
+  
+    const { sub } = payload as { sub: string };
+    const userId = sub;
+  
+    const savedControllerId = await UserService.getControllerIdByUser({
+      userId,
+      provider,
+      hostname,
+      settingsId,
+      controllerId,
+    });
+  
+    res.send(renderPostMessageScript({
+      controllerId: savedControllerId,
+      provider,
+      consentsHistoryLink: `${process.env.CONSENTS_HISTORY_URL}/${provider}/${userId}`
+    }));
   });

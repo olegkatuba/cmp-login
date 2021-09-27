@@ -22,7 +22,7 @@ class UserService {
     }).exec();
 
     if (user?.controllerId) {
-      return user?.controllerId;
+      return user.controllerId;
     }
 
     const newUser = await new UserModel({
