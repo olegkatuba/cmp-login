@@ -1,7 +1,8 @@
 import { UserModel } from "../models/User";
+import crypto from "crypto";
 
 class UserService {
-  async getControllerIdByUser({
+  async restoreAndSaveControllerId({
     userId,
     hostname,
     provider,
@@ -13,9 +14,14 @@ class UserService {
     provider: string;
     settingsId: string;
     controllerId: string;
-  }) {
+  }): Promise<string> {
+    const hashedUserId = crypto
+      .createHmac("sha256", process.env.HASH_SECRET)
+      .update(userId)
+      .digest("hex");
+
     const user = await UserModel.findOne({
-      id: userId,
+      id: hashedUserId,
       provider,
       hostname,
       settingsId,
@@ -26,8 +32,8 @@ class UserService {
     }
 
     const newUser = await new UserModel({
+      id: hashedUserId,
       provider,
-      id: userId,
       controllerId,
       settingsId,
       hostname,
