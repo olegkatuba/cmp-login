@@ -14,6 +14,8 @@ const schema = new Schema<User>({
   controllerId: { type: String, required: true },
   settingsId: { type: String, required: true },
   hostname: { type: String, required: true }
+}, {
+  timestamps: { createdAt: true, updatedAt: false }
 });
 
 export const UserModel = model<User>("User", schema);

@@ -31,5 +31,5 @@ export default express
     body("id_token", "id_token is missed").isJWT(),
     body("state", "state is missed").isString(),
     validate(),
-    authProviderCallback("google")
+    authProviderCallback(googleAuthProvider)
   );

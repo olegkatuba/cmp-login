@@ -1,17 +1,15 @@
 import { Request, Response } from "express";
 import UserService from "../services/user";
-import jwt from "jsonwebtoken";
 import { renderPostMessageScript } from "../utils";
 import HttpException from "../HttpException";
-
-type SupportedProviders = "google" | "apple";
+import BaseAuthProvider from "../providers/BaseProvider";
 
 interface CallbackRequestBody{
   state: string,
   id_token: string,
 }
 
-export default (provider: SupportedProviders) => async (req: Request<{}, {}, CallbackRequestBody>, res: Response) => {
+export default (authProvider?: BaseAuthProvider) => async (req: Request<{}, {}, CallbackRequestBody>, res: Response) => {
   let controllerId, settingsId, hostname;
   try {
     const state = JSON.parse(
@@ -24,7 +22,7 @@ export default (provider: SupportedProviders) => async (req: Request<{}, {}, Cal
     return new HttpException(400, "Invalid state");
   }
 
-  let payload;
+  /* let payload;
   try {
     payload = jwt.decode(req.body.id_token);
   } catch (e) {
@@ -32,11 +30,12 @@ export default (provider: SupportedProviders) => async (req: Request<{}, {}, Cal
   }
 
   const { sub } = payload as { sub: string };
-  const userId = sub;
+  const userId = sub; */
+  const userId = await authProvider.getIdByToken(req.body.id_token);
 
   const savedControllerId = await UserService.restoreAndSaveControllerId({
     userId,
-    provider,
+    provider: authProvider.name,
     hostname,
     settingsId,
     controllerId,
@@ -45,7 +44,7 @@ export default (provider: SupportedProviders) => async (req: Request<{}, {}, Cal
   res.send(
     renderPostMessageScript({
       controllerId: savedControllerId,
-      provider,
+      provider: authProvider.name,
     })
   );
 }
